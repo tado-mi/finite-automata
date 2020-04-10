@@ -8,15 +8,13 @@
 
 int main() {
 
-  FA new = new_FA(2, "01");
-  set_transition(new, 0, '0', 0);
-  set_transition(new, 0, '0', 1);
-  set_transition(new, 0, '1', 0);
-  set_transition(new, 1, '0', 0);
-  set_transition(new, 1, '1', 1);
-  set_accepting(new, 0);
+  FA new = new_FA(2, "ab");
+  set_transition(new, 0, 'a', 0);
+  set_transition(new, 0, 'b', 1);
+  set_transition(new, 1, 'a', 1);
+  set_transition(new, 1, 'b', 0);
+  set_accepting(new, 1);
 
-
-  execute(new, "1111");
+  execute(new, "abbab");
 
 }
