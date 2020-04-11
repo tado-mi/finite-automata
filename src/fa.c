@@ -1,4 +1,4 @@
-#include "fa.h"
+#include "../fa.h"
 
 struct FA {
 
@@ -59,7 +59,7 @@ FA new_FA(int n, char* sigma) {
   return new;
 }
 
-// util function
+// util functions
 
 int index_of(FA fa, char c) {
 
@@ -186,6 +186,7 @@ int set_accepting(FA fa, int state) {
   if (!is_valid(fa, state, (*fa).Sigma[0], 0))
     return 0;
   (*fa).F[state] = 1;
+  return 1;
 
 }
 
@@ -233,9 +234,9 @@ void print_FA(FA fa) {
   for (int i = 0; i < (*fa).ROW; i = i + 1) {
     for (int j = 0; j < (*fa).COL; j = j + 1) {
       int* temp = (*fa).delta[i][j];
-      // if (size(fa, temp) < 1) {
-      //   continue;
-      // }
+      if (size(fa, temp) < 1) {
+        continue;
+      }
       printf(" δ(%d, %s) = ", i, get_char(fa, j));
       print_set(fa, temp);
     }

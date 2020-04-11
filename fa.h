@@ -9,5 +9,3 @@ extern int set_transition(FA fa, int from, char on, int to);
 extern int set_accepting(FA fa, int state);
 
 extern int execute(FA fa, char* input);
-
-// #endif

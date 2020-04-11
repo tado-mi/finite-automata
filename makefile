@@ -9,10 +9,14 @@ CFLAGS = -g -Wall
 TARGET = main
 OUTFILE = main.o
 
+DATA_STRUCTS = ../../data-struct/src
+RELATIONAL_ALGEBRA = ../relational-algebra-parser/src
+SRC = src
+
 all: $(TARGET)
 
 $(TARGET): $(TARGET).c
-	$(CC) $(CFLAGS) $(TARGET).c -o $(OUTFILE)
+	$(CC) $(CFLAGS) $(DATA_STRUCTS)/*.c $(RELATIONAL_ALGEBRA)/*.c $(SRC)/*.c $(TARGET).c -o $(OUTFILE)
 
 do:
 	$(CC) *.c -o $(OUTFILE)
