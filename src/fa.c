@@ -1,18 +1,19 @@
+#include "util.h"
+#include "state.h"
 #include "../fa.h"
 
 struct FA {
 
-  // <Q, Σ, δ, F, q0 >
-  int*  Q;
+  state* Q;
   char* Sigma;
-  int*** delta;
-  int* F;
-  int q0;
 
+  state q0;
+
+  // miscelaneous
   // number of states
-  int ROW;
-  // number of terminals (and ε)
-  int COL;
+  int n;
+  // length of the alphabet
+  int m;
 
 };
 
@@ -20,15 +21,19 @@ FA new_FA(int n, char* sigma) {
 
   FA new = malloc(sizeof(struct FA));
 
+  // m = size of the sigma
+  int m = (int) strlen(sigma);
+
   // initialise the set of states
-  (*new).Q = malloc(n * sizeof(int));
+  (*new).Q = malloc(n * sizeof(state));
   for (int i = 0; i < n; i = i + 1) {
-    (*new).Q[i] = i;
+    (*new).Q[i] = new_state(i, m, n);
   }
 
   // assign the alphabet
   (*new).Sigma = sigma;
 
+  /*
   // assign the number of states as the number of rows
   (*new).ROW = n;
   // assign the number of terminals as the number of columns; add one for possible ε - transitions
@@ -51,260 +56,257 @@ FA new_FA(int n, char* sigma) {
   for (int i = 0; i < n; i = i + 1) {
     (*new).F[i] = 0;
   }
+  */
 
   // initialise the start state
-  (*new).q0 = 0;
+  (*new).q0 = (*new).Q[0];
+
+  //
+  (*new).n = n;
+  (*new).m = m;
 
   // return the machine
   return new;
-}
-
-// util functions
-
-int index_of(FA fa, char c) {
-
-  if (c == "ε"[0]) {
-    return (*fa).COL - 1;
-  }
-
-  char* sigma = (*fa).Sigma;
-  for (int i = 0; sigma[i] != '\0'; i = i + 1) {
-    if (sigma[i] == c)
-      return i;
-  }
-  return -1;
-}
-
-int size(FA fa, int* arr) {
-  int len = 0;
-  for (int i = 0; i < (*fa).ROW && arr != NULL; i = i + 1) {
-    if (arr[i] == -1) {
-      break;
-    }
-    len = i + 1;
-  }
-  return len;
-}
-
-// for printing
-char* get_char(FA fa, int j) {
-
-  char* str = "ε";
-  if (j == (*fa).COL - 1) {
-    return str;
-  }
-  char* sigma = (*fa).Sigma;
-  str = malloc(sizeof(char));
-  if (j < strlen(sigma)) {
-    str[0] = sigma[j];
-  } else {
-    str[0] = '?';
-  }
-  return str;
-}
-
-void print_set(FA fa, int* arr) {
-  int len = size(fa, arr);
-  printf("{");
-  for (int i = 0; i < len - 1; i++) {
-    printf(" %d,", arr[i]);
-  }
-  if (len > 0) {
-    printf(" %d", arr[len - 1]);
-  }
-  printf(" }\n");
-}
-
-int is_valid(FA fa, int from, char on, int to) {
-
-  if (fa == NULL)
-    return 0;
-
-  if (from < 0 || from >= (*fa).ROW || to < 0 || to >= (*fa).ROW)
-    return 0;
-
-  int on_index = index_of(fa, on);
-  if (on_index < 0 || on_index >= (*fa).COL)
-    return 0;
-
-  return 1;
-
-}
-
-int contains(FA fa, int* arr, int el) {
-  for (int i = 0; i < size(fa, arr); i = i + 1) {
-    if (arr[i] == el)
-      return 1;
-  }
-  return 0;
-}
-
-int join(FA fa, int* arr, int* brr) {
-
-  // assuming arrays are sorted
-  for (int i = size(fa, arr); i < (*fa).ROW; i = i + 1) {
-    int count = 0;
-    while (contains(fa, arr, brr[count])) {
-      count = count + 1;
-    }
-    arr[i] = brr[count];
-  }
-
-  return 1;
-
-}
-
-// end util function
-
-int set_transition(FA fa, int from, char on, int to) {
-
-  if (!is_valid(fa, from, on, to)) {
-    printf("set_transition: δ(%d, %c) = %d\n", from, on, to );
-    printf("\terror:\n");
-    printf("Q = ");
-    print_set(fa, (*fa).Q);
-    printf("Σ = %s\n", (*fa).Sigma);
-    return 0;
-  }
-
-  int on_index = index_of(fa, on);
-
-  int* arr = (*fa).delta[from][on_index];
-  for (int i = 0; i < (*fa).ROW; i = i + 1) {
-    if (arr[i] == to || arr[i] == -1) {
-      arr[i] = to;
-      return 1;
-    }
-  }
-
-  return 0;
-
-}
-
-int set_accepting(FA fa, int state) {
-
-  if (!is_valid(fa, state, (*fa).Sigma[0], 0))
-    return 0;
-  (*fa).F[state] = 1;
-  return 1;
-
-}
-
-int* get_transition(FA fa, int from, char on) {
-
-  // printf("get transition: δ(%d, %c) = ", from, on);
-
-  if (!is_valid(fa, from, on, 0))
-    return NULL;
-
-  int* arr = (*fa).delta[from][index_of(fa, on)];
-  if (size(fa, arr) < 1)
-    return NULL;
-
-  // print_set(fa, arr);
-  return arr;
-
-}
-
-int get_accepting(FA fa, int* arr) {
-
-  int len = size(fa, arr);
-  if (len < 1)
-    return 0;
-  for (int i = 0; i < len; i = i + 1) {
-    int ind = arr[i];
-    if ((*fa).F[ind]) {
-      return 1;
-    }
-  }
-  return 0;
-
 }
 
 void print_FA(FA fa) {
 
   printf("\t<Q, Σ, δ, F, q0 >\n");
 
-  printf("Q = ");
-  print_set(fa, (*fa).Q);
+  printf("Q = {q0, ... , q%d}\n", (*fa).n - 1);
 
   printf("Σ = %s\n", (*fa).Sigma);
 
   printf("δ = \n");
-  for (int i = 0; i < (*fa).ROW; i = i + 1) {
-    for (int j = 0; j < (*fa).COL; j = j + 1) {
-      int* temp = (*fa).delta[i][j];
-      if (size(fa, temp) < 1) {
-        continue;
-      }
-      printf(" δ(%d, %s) = ", i, get_char(fa, j));
-      print_set(fa, temp);
-    }
+  for (int i = 0; i < (*fa).n; i = i + 1) {
+
+    state q = (*fa).Q[i];
+    printf("q%d\n", get_ID(q));
+    print_transitions(q, (*fa).Sigma);
+
   }
 
-  printf("F = ");
-  print_set(fa, (*fa).F);
+  printf("F = { ");
+  for (int i = 0; i < (*fa).n; i = i + 1) {
+    state q = (*fa).Q[i];
+    if (is_accepting(q)) {
+      printf("q%d ", get_ID(q));
+    }
+  }
+  printf("}\n");
+  // print_set(fa, (*fa).F);
 
-  printf("q0 = %d\n", (*fa).q0);
+  printf("q0 = %d\n", get_ID((*fa).q0));
 
 }
 
-int execute(FA fa, char* input) {
+FA atomic_FA(char* Sigma) {
 
-  printf("consider the following Finite Automata");
-  print_FA(fa);
+  FA this = new_FA(2, Sigma);
 
-  int* curr = malloc((*fa).ROW * sizeof(int));
-  // fill up with -1
-  for (int i = 0; i < (*fa).ROW; i = i + 1)
-    curr[i] = -1;
-  // assign the start state
-  curr[0] = (*fa).q0;
+  // char c = Sigma[0]
+  int index = 0;
 
-  printf("\nstarting execution on the input \"%s\":\n", input);
+  // 0 -- c --> 1
+  state STATE_0 = (*this).Q[0];
+  state STATE_1 = (*this).Q[1];
 
-  while (*input != '\0') {
+  set_transition(STATE_0, index, STATE_1);
+  set_accepting(STATE_1, 1);
 
-    int n = size(fa, curr);
+  return this;
 
-    printf("terminal: %c; current %s = ", *input, n > 1? "(set of) state(s)": "state");
-    print_set(fa, curr);
+}
 
-    int* new_curr = malloc((*fa).ROW * sizeof(int));
-    // fill up with -1
-    for (int i = 0; i < (*fa).ROW; i = i + 1)
-      new_curr[i] = -1;
+state* get_accepting_states(FA fa) {
 
-    for (int i = 0; i < n; i = i + 1) {
-      int* temp = get_transition(fa, curr[i], *input);
-      if (temp == NULL)
-        continue;
-      join(fa, new_curr, temp);
+  int n = (*fa).n + 1;
+  state* accepting = malloc(n * sizeof(state));
+  for (int i = 0; i < n; i = i + 1) {
 
-      // consider epsilon transitions
-      // temp = get_transition(fa, curr[i], "ε"[0]);
-      // printf("\t (set of) state(s) on ε: ");
-      // print_set(fa, temp);
-
-    }
-
-    if (size(fa, new_curr) < 1) {
-      // no transition
-      return 0;
-    }
-
-    // change the state
-    curr = new_curr;
-
-    // consume the terminal
-    input++;
+    accepting[i] = NULL;
 
   }
 
-  printf("result:\t");
+  int count = 0;
+  for (int i = 0; i < (*fa).n; i = i + 1) {
 
-  int ans = get_accepting(fa, curr);
-  printf("%s\n", ans? "accepted" : "rejected");
-  return ans;
+    state q = (*fa).Q[i];
+    if (is_accepting(q)) {
+
+      accepting[count] = q;
+      count++;
+
+    }
+
+  }
+  return accepting;
+}
+
+void copy_FA(FA target, FA source, int offset) {
+
+  int source_0 = get_ID((*source).q0);
+  int target_0 = get_ID((*target).q0);
+
+  for (int i = 0; i < (*source).n; i = i + 1) {
+
+    state q = (*source).Q[i];
+    int from = (i == source_0)? target_0: i + offset;
+
+    for (int j = 0; j < (*source).m; j = j + 1) {
+
+      char c = (*source).Sigma[j];
+      int on = index_of((*target).Sigma, c);
+
+      state* transitions = get_transitions(q, j);
+      for (int x = 0; x < (*source).n; x = x + 1) {
+
+        state t = transitions[x];
+        if (t == NULL) {
+          break;
+        }
+
+        int to = get_ID(t);
+        to = (to == source_0)? target_0: to + offset;
+
+        set_transition((*target).Q[i], on, (*target).Q[to]);
+      }
+
+    }
+
+    if (is_accepting(q)) {
+      set_accepting((*target).Q[from], 1);
+    }
+
+  }
+
+}
+
+FA union_FA(FA FA_1, FA FA_2) {
+
+  // -1 since starting states will be merged
+  int n = (*FA_1).n + (*FA_2).n - 1;
+  int offset = (*FA_1).n - 1;
+
+  char* Sigma = concat((*FA_1).Sigma, (*FA_2).Sigma);
+
+  FA this = new_FA(n, Sigma);
+
+  // copy FA #1 merging the starting states, with no offset
+  copy_FA(this, FA_1, 0);
+
+  // copy FA #2 merging the starting states, with an offset
+  copy_FA(this, FA_2, offset);
+
+  return this;
+
+}
+
+state* offset_states(FA this, state* source, int offset) {
+
+  state* answer = malloc( (*this).n * sizeof(state) );
+
+  for (int i = 0; source[i] != NULL; i = i + 1) {
+
+    state temp = source[i];
+    int index = get_ID(temp) + offset;
+    answer[i] = (*this).Q[index];
+  }
+
+  return answer;
+
+}
+
+FA concat_FA(FA FA_1, FA FA_2) {
+
+  int n = (*FA_1).n + (*FA_2).n - 1;
+  int offset = (*FA_1).n - 1;
+
+  char* Sigma = concat((*FA_1).Sigma, (*FA_2).Sigma);
+
+  FA this = new_FA(n, Sigma);
+
+  // copy FA #1 merging the starting states, with no offset
+  copy_FA(this, FA_1, 0);
+  state* accepting = get_accepting_states(this);
+  for (int k = 0; accepting[k] != NULL; k = k + 1) {
+
+    // p is an accepting state of the FA this
+    state p = accepting[k];
+    // undo the accepting status of p
+    set_accepting(p, 0);
+
+  }
+
+  // note: all the accepting states of FA_1 should act as a starting state for FA_2
+  state q = (*FA_2).q0;
+  for (int j = 0; j < (*FA_2).m; j = j + 1) {
+
+    char c = (*FA_2).Sigma[j];
+    // transitions from FA #2's starting state on char c
+    state* transitions_0 = get_transitions(q, j);
+
+    for (int k = 0; accepting[k] != NULL; k = k + 1) {
+
+      // p is an accepting state of the FA this
+      state p = accepting[k];
+      // undo the accepting status of p
+      set_accepting(p, 0);
+
+      // offset them to align with the fa this
+      state* transitions = offset_states(this, transitions_0, offset);
+      // if there is a transition q to q, ensure it translates to a transition from p to p, not to (0 + offset)
+      for (int r = 0; r < (*this).n; r = r + 1) {
+
+        state temp = transitions[r];
+        if (temp == NULL) {
+          break;
+        }
+
+        if (get_ID(temp) == offset) {
+          transitions[r] = p;
+          break;
+        }
+
+      }
+
+      // transfer all of q's transitions on c into p
+      int index = index_of((*this).Sigma, c);
+      set_transitions(p, index, transitions);
+
+    }
+
+  }
+
+  // copy the rest of the transitions of FA #2
+  for (int i = 1; i < (*FA_2).n; i = i + 1) {
+
+    q = (*FA_2).Q[i];
+    state from = (*this).Q[get_ID(q) + offset];
+
+    for (int j = 0; j < (*FA_2).m; j = j + 1) {
+
+      char c = (*FA_2).Sigma[j];
+      // transitions from FA #2's starting state on char c
+      state* transitions = get_transitions(q, j);
+
+      // offset the transitions
+      transitions = offset_states(this, transitions, offset);
+
+      // transfer all of q's transitions on c into p
+      int index = index_of((*this).Sigma, c);
+      set_transitions(from, index, transitions);
+
+    }
+
+    if (is_accepting(q)) {
+
+        set_accepting(from, 1);
+
+    }
+
+  }
+
+  return this;
 
 }
