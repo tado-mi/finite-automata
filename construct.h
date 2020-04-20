@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../data-struct/tree.h"
-#include "../relational-algebra-parser/eval.h"
+#include "../data-struct/tree.h"
+#include "../regex-parser/eval.h"
 
-extern void get_FA(char* regex);
+#include "fa.h"
+
+extern FA get_FA(char* regex);

@@ -1,5 +1,4 @@
 #include "../construct.h"
-#include "../fa.h"
 
 FA build(TREE tree) {
 
@@ -43,7 +42,7 @@ FA build(TREE tree) {
 
 }
 
-void get_FA(char* regex) {
+FA get_FA(char* regex) {
 
   TREE tree = get_tree(regex);
   FA fa = build(tree);
@@ -51,5 +50,6 @@ void get_FA(char* regex) {
   printf("given regular expression \"%s\", we compute FA: ", regex);
   print_FA(fa);
 
+  return fa;
 
 }
