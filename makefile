@@ -9,8 +9,8 @@ CFLAGS = -g -Wall
 TARGET = main
 OUTFILE = main.o
 
-DATA_STRUCTS = ../../data-struct/src
-RELATIONAL_ALGEBRA = ../relational-algebra-parser/src
+DATA_STRUCTS = ../data-struct/src
+RELATIONAL_ALGEBRA = ../regex-parser/src
 SRC = src
 
 all: $(TARGET)
