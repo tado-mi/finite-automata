@@ -81,7 +81,6 @@ void print_state(state this, char* Sigma) {
   printf("\tδ:\n");
   print_transitions(this, Sigma);
 
-
 }
 
 // setting functions
@@ -123,7 +122,7 @@ int set_transitions(state this, int on, state* to) {
     int success = set_transition(this, on, to[t]);
     if (!success) {
       result = 0;
-      printf("unable to add q%d\n", (*to[t]).ID);
+      printf("unable to add q%d to q%d\n", (*to[t]).ID, (*this).ID);
     }
 
   }
@@ -162,5 +161,57 @@ int get_ID(state this) {
 int is_accepting(state this) {
 
   return (*this).accepting;
+
+}
+
+// util functions for fa's execute method
+
+int contains(state* arr, state elem) {
+
+  for (int i = 0; i < (*arr[0]).n && arr[i] != NULL; i = i + 1) {
+
+    if (elem == NULL || get_ID(arr[i]) == get_ID(elem)) {
+
+      return 1;
+
+    }
+
+  }
+
+  return 0;
+
+}
+
+void join_states(state* in, state* from, int n) {
+
+  if (in[0] == NULL) {
+
+    for (int i = 0; i < n; i = i + 1) {
+
+      in[i] = from[i];
+
+    }
+
+    return;
+
+  }
+
+  int index = 0;
+  while (in[index] != NULL) {
+
+    index = index + 1;
+
+  }
+
+  for (int i = 0; i < (*from[0]).n; i = i + 1) {
+
+    if (!contains(in, from[i])) {
+
+      in[index] = from[i];
+      index = index + 1;
+
+    }
+
+  }
 
 }

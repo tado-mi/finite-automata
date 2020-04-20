@@ -17,3 +17,5 @@ extern void set_accepting(state this, int val);
 extern state* get_transitions(state this, int on);
 extern int get_ID(state this);
 extern int is_accepting(state this);
+
+extern void join_states(state* in, state* from, int n);
