@@ -100,6 +100,66 @@ void print_FA(FA fa) {
 
 }
 
+int execute(FA fa, char* input) {
+
+  state* curr = malloc((*fa).n * sizeof(state));
+  // fill up with -1
+  for (int i = 0; i < (*fa).n; i = i + 1) {
+    curr[i] = NULL;
+  }
+  // assign the start state
+  curr[0] = (*fa).q0;
+
+  printf("\nstarting execution on the input \"%s\":\n", input);
+
+  for (int c = 0; input[c] != '\0'; c = c + 1) {
+
+    printf("terminal: %c; current set of states { ", input[c]);
+    for (int i = 0; curr[i] != NULL; i = i + 1) {
+        printf("q%d ", get_ID(curr[i]));
+    }
+    printf("}\n");
+
+    state* new_curr = malloc((*fa).n * sizeof(state));
+    for (int i = 0; i < (*fa).n; i = i + 1) {
+      new_curr[i] = NULL;
+    }
+
+    for (int i = 0; i < (*fa).n && curr[i] != NULL; i = i + 1) {
+      state* temp = get_transitions(curr[i], c);
+      if (temp == NULL)
+        continue;
+      join_states(new_curr, temp, (*fa).n);
+    }
+
+    if (new_curr[0] == NULL) {
+
+      // no transition
+      printf("result:\t rejected");
+      return 0;
+
+    }
+
+    // change the state
+    curr = new_curr;
+
+  }
+
+  printf("result:\t");
+
+  int ans = 0;
+  for (int i = 0; curr[i] != NULL; i = i + 1) {
+    if (is_accepting(curr[i])) {
+      ans = 1;
+      break;
+    }
+  }
+  printf("%s\n", ans? "accepted" : "rejected");
+  return ans;
+
+}
+
+
 FA atomic_FA(char* Sigma) {
 
   FA this = new_FA(2, Sigma);

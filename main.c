@@ -7,6 +7,7 @@
 
 int main() {
 
-  get_FA("a.b|c");
+  FA fa = get_FA("a.b|c");
+  execute(fa, "ab");
 
 }
